@@ -5,7 +5,7 @@ import numpy as np
 import nibabel as nb
 import os
 import warnings
-from . import connectivity
+from . import connectivity, read_files
 import pandas as pd
 ###
 
@@ -31,7 +31,7 @@ class Scan:
         """ file can be nifti or cifti for fMRI, .tck or .mat (output from eDTI) for tracts"""
         if os.path.isfile(filepath):
             self.path = filepath
-            extention = pathlib.Path.suffixes(filepath)
+            extention = pathlib.Path(filepath).suffixes
             if '.nii' in extention:
                 self.data_type = 'fMRI'
             else:
@@ -61,21 +61,29 @@ class Scan:
     @property
     def connectivity_matrix(self) -> np.ndarray:
         """computes connectivity matrix"""
-        parc = read_files.read_volume(self.atlas['parc'])
+        ##################################
         if self.data_type == 'tracts':
+            parc = read_files.read_nifti(self.atlas['parc'])
             tracts = read_files.read_tracts(self.path)
             matrix = connectivity.connectivity_matrix_diffusion(tracts, self.labels, parc)
+        else:
+            parc = read_files.read_fmri(self.atlas['parc'])
+            dat = read_files.read_fmri(self.path)
+            matrix = connectivity.connectivity_matrix_fmri(dat, self.labels, parc)
         return matrix
 
     @save_results
     @property
     def labels(self):
-        parc = read_files.read_volume(self.atlas['parc'])
         if self.atlas['meta'] == '':
+            if self.data_type == 'tracts':
+                parc = read_files.read_nifti(self.atlas['parc'])
+            else:
+                parc = read_files.read_fmri(self.atlas['parc'])
             indices = [x for x in np.unique(parc) if x > 0]
             meta = pd.DataFrame([indices, indices], index=0, columns=['index', 'area'])
         else:
-            meta = read_files.read_meta()
+            meta = read_files.read_metadata_atlas(self.atlas['meta'])
         return meta
 
     def measure(self, measure_name) -> float:
@@ -91,12 +99,21 @@ class Scan:
     def seed_based(self, prefix='') -> nb.nifti1:
         """computes seed based connectivity matrix for fMRI.
         if save_path is not empty, saves the map as nifti"""
-        roi_data = read_files.read_volume(self.roi)
-        data, shape = read_files.read_fmri(self.path)
+        roi_data = read_files.read_fmri(self.roi)
+        data = read_files.read_fmri(self.path, get_shape=True)
+        shape = None
+        if isinstance(data, tuple):
+            shape = data[1]
+            data = data[0]
         seed_map = connectivity.seed_map(roi_data, data)
-        seed_map.reshape(shape)
+        if shape is not None:
+            seed_map = seed_map.reshape(shape)
+
         if prefix == '':
             warnings.warn('no prefix added, map will not be saved')
         else:
-            pass
+            img = nb.Nifti1Image(seed_map)
+            split_roi = os.path.split(self.roi)
+            path = os.path.join(split_roi[0], prefix + split_roi[-1])
+            nb.save(img, path)
         return seed_map
