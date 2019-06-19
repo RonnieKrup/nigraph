@@ -23,31 +23,32 @@ class Scan:
         self.atlas = {'parc': '', 'meta:': ''}
         self.rois = {}
         self.saved_results = {}
+        self.data_type = ''
 
     def set_file(self, filepath: Union[pathlib.Path, str]):
         """ file can be nifti or cifti for fMRI, .tck or .mat (output from eDTI) for tracts"""
         if os.path.isfile(filepath):
             self.path = filepath
+            extention = pathlib.Path.suffixes(filepath)
+            if '.nii' in extention:
+                self.data_type = 'fMRI'
+            else:
+                self.data_type = 'tracts'
         else:
             warnings.warn('ROI file not found. ROI not loaded')
 
-    def set_atlas(self, parc_path: Union[pathlib.Path, str]):
-        """ atlas can be nifti or cifti"""
-        if os.path.isfile(parc_path):
+    def set_atlas(self, parc_path: Union[pathlib.Path, str], meta_path: Union[pathlib.Path, str]=''):
+        """ atlas can be nifti or cifti
+        metadata must have index and label. can be .txt or .xml
+        """
+        if os.path.isfile(parc_path) and os.path.isfile(meta_path):
             self.atlas['parc'] = parc_path
             self.atlas['meta'] = ''
         else:
             warnings.warn('One of the files was not found, Parcellation not loaded')
 
-    def set_metadata(self, meta_path: Union[pathlib.Path, str]):
-        """metadata must have index and label. can be .txt or .xml"""
-        if os.path.isfile(meta_path):
-            self.atlas['meta'] = meta_path
-        else:
-            warnings.warn('One of the files was not found, Parcellation not loaded')
-
-
     def add_roi(self, roi_path, roi_name):
+        """roi will be nifti"""
         if os.path.isfile(roi_path):
             self.rois[roi_name] = roi_path
         else:
@@ -56,6 +57,7 @@ class Scan:
     @save_results
     @property
     def connectivity_matrix(self) -> Tuple[np.ndarray, np.ndarray]:
+        """computes connectivity matrix"""
         return ''
 
     def measure(self, measure_name) -> float:
