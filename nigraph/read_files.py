@@ -36,12 +36,19 @@ def read_mat(file_path):
     return tract_data
 
 def read_metadata_atlas(file_path):
-    tree = ET.parse(file_path)
-    root = tree.getroot()
-    ind=[]
-    name=[]
-    for i in root[1]:
-        ind.append(i.attrib['index'])
-        name.append(i.text)
-    return pd.DataFrame(ind,name)
+    if file_path[-3:]=='xml':
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+        ind=[]
+        name=[]
+        for i in root[1]:
+            ind.append(i.attrib['index'])
+            name.append(i.text)
+        return pd.DataFrame(np.transpose([ind,name] ))
+
+    elif file_path[-3:]=='txt':
+        label=pd.read_csv(file_path,header=None,sep=' ',names=['ind','area','real_index'])
+        label=label.set_index('real_index')
+        return label
     
+
