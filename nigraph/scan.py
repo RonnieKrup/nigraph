@@ -7,6 +7,7 @@ import os
 import warnings
 from . import connectivity, read_files
 import pandas as pd
+import networkx as nx
 ###
 
 
@@ -74,6 +75,12 @@ class Scan:
 
     @save_results
     @property
+    def connectivity_graph(self):
+        graph = nx.from_numpy_matrix(self.connectivity_matrix)
+        return graph
+
+    @save_results
+    @property
     def labels(self):
         if self.atlas['meta'] == '':
             if self.data_type == 'tracts':
@@ -88,12 +95,23 @@ class Scan:
 
     def measure(self, measure_name) -> float:
         """computes given measure.
-        measure name can accept:
+        measure name can accept both full name and abbreviation:
         - cc: closness centrality
         - msp: mean shortest path
         - dd: degree distribution
         - nc: node connectivity
         - ec: edge connectivity"""
+        measures = {'closness centrality': 'cc',
+                    'mean shortest path': 'msp',
+                    'degree distribution': 'dd',
+                    'node connectivity': 'nc',
+                    'edge connectivity': 'ec',
+                    'mean clustering coefficient': 'mcc'}
+        if measure_name in measures.keys():
+            measure_name = measures[measure_name]
+        elif measure_name not in measures.values():
+            warnings.warn('no such measure implemented')
+            return 0
         return getattr(self, measure_name)
 
     def seed_based(self, prefix='') -> nb.nifti1:
@@ -112,7 +130,7 @@ class Scan:
         if prefix == '':
             warnings.warn('no prefix added, map will not be saved')
         else:
-            img = nb.Nifti1Image(seed_map)
+            img = nb.Nifti1Image(seed_map, affine=None)
             split_roi = os.path.split(self.roi)
             path = os.path.join(split_roi[0], prefix + split_roi[-1])
             nb.save(img, path)
@@ -121,4 +139,59 @@ class Scan:
     @save_results
     @property
     def msp(self):
-        pass
+        """compute mean shortest path.
+        Distances are computed by 1/correlation for fMRI and by 1/number_of_tracts for diffusion.
+        connectivity
+        """
+        if np.any(self.connectivity_matrix.astype(int) > 1):
+            cm2 = 1 / self.connectivity_matrix
+            cm2[self.connectivity_matrix == 0] = 0
+            cm2 = 200 * cm2
+            g = nx.from_numpy_matrix(cm2)
+            msp = dict(nx.all_pairs_dijkstra_path_length(g))
+            mean_ds = []
+            for i in msp:
+                pairs = msp[i]
+                d = 1 / np.array([x for x in pairs.values() if x > 0])
+                if len(d) > 0:
+                    mean_ds.append(np.mean(d))
+            msp = 1 / np.mean(np.array(mean_ds))
+
+        else:
+            cm = self.connectivity_matrix.astype(int)
+            g = nx.from_numpy_matrix(cm)
+            msp = nx.average_shortest_path_length(g)
+        return msp
+
+    @save_results
+    @property
+    def cc(self):
+        """compute the closeness centrality"""
+        cc = nx.closeness_centrality(self.connectivity_graph)
+        return np.mean(list(cc.values()))
+
+    @save_results
+    @property
+    def dd(self):
+        """compute mean degree for this graph"""
+        vec = list(dict(self.connectivity_graph.degree).values())
+        mean_deg = np.mean(vec)
+        return mean_deg
+
+    @save_results
+    @property
+    def nc(self):
+        """compute node connectivity for this graph"""
+        return nx.average_node_connectivity(self.connectivity_graph)
+
+    @save_results
+    @property
+    def ec(self):
+        """compute edge connectivity for this graph"""
+        return nx.edge_connectivity(self.connectivity_graph)
+
+    @save_results
+    @property
+    def mcc(self):
+        """compute mean clustering coefficient"""
+        return nx.edge_connectivity(self.connectivity_graph)
