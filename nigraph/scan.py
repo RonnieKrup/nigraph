@@ -117,3 +117,8 @@ class Scan:
             path = os.path.join(split_roi[0], prefix + split_roi[-1])
             nb.save(img, path)
         return seed_map
+
+    @save_results
+    @property
+    def msp(self):
+        pass

@@ -45,6 +45,7 @@ def read_mat(file_path):
         tract_data[i][0] = tract_data[i][0]/tracts['VDims']
     return tract_data
 
+
 def read_metadata_atlas(file_path):
     if file_path[-3:] == 'xml':
         tree = ET.parse(file_path)
@@ -57,9 +58,10 @@ def read_metadata_atlas(file_path):
         return pd.DataFrame(np.transpose([ind, name]))
 
     elif file_path[-3:] == 'txt':
-        label=pd.read_csv(file_path, header=None, sep=' ', names=['ind', 'area', 'real_index'])
-        label=label.set_index('real_index')
+        label = pd.read_csv(file_path, header=None, sep=' ', names=['ind', 'area', 'real_index'])
+        label = label.set_index('real_index')
         return label
+    warnings.warn('The file type is not compatible. File not saved!')
 
 
 def read_tracts(file_path):
