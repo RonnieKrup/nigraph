@@ -1,10 +1,11 @@
 ### imports ###
 import numpy as np
-import nibabel as nb
 import pandas as pd
 from typing import Tuple, Union
 import random
 from collections import defaultdict
+from scipy.stats.stats import pearsonr
+
 ###
 
 
@@ -26,7 +27,6 @@ def connectivity_matrix_diffusion(tract_data: np.ndarray, meta: pd.DataFrame, pa
     cm = np.zeros((len(labels), len(labels)))
     print("computing end connectivity matrix")
     for tract in tract_data:
-        # find start and end point label
         start = [tract[0].astype(int)[0], tract[0].astype(int)[1], tract[0].astype(int)[2]]
         end = [tract[-1].astype(int)[0], tract[-1].astype(int)[1], tract[-1].astype(int)[2]]
 
@@ -40,7 +40,25 @@ def connectivity_matrix_diffusion(tract_data: np.ndarray, meta: pd.DataFrame, pa
         else:
             end = parc[end[0], end[1], end[2]]
 
-        if start > 0 and end > 0:
+        if start in labels and end in labels:
             cm[labels.index(start), labels.index(end)] += 1
 
-        return cm, labels
+        return cm
+
+
+def connectivity_matrix_fmri(data: np.ndarray, meta: pd.DataFrame, parc: np.ndarray):
+
+    tpoints = data.shape[0]
+    parcels = np.max(np.unique(parc))
+    parcelated_dtseries = np.zeros((parcels, tpoints))
+    for area in range(len(meta.index)):
+        area_dtseries = np.mean(data[:, parc == meta.index[area]], axis=1)
+        parcelated_dtseries[area, :] = area_dtseries
+    corr_mat = np.corrcoef(parcelated_dtseries)
+    return corr_mat
+
+
+def seed_map(roi, data: np.ndarray):
+    roi_vals = np.mean(data[:roi > 0], axis=1)
+    s_map = np.apply_along_axis(lambda x: pearsonr(roi_vals, x), data, axis=1)
+    return s_map
