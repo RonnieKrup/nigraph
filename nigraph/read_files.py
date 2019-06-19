@@ -3,7 +3,8 @@ import nibabel as nib
 import pandas as pd 
 import xml.etree.ElementTree as ET
 import scipy.io as spio
-
+import pathlib
+import warnings
 
 def read_nifty_fmri(file_path):
     nif=nib.load(file_path).get_data()
@@ -50,5 +51,22 @@ def read_metadata_atlas(file_path):
         label=pd.read_csv(file_path,header=None,sep=' ',names=['ind','area','real_index'])
         label=label.set_index('real_index')
         return label
-    
 
+def read_tracts(file_path):
+    suff=pathlib.Path(file_path).suffixes
+    if suff=='.tck':
+        return read_tck(file_path)
+    elif suff=='.mat':
+        return read_mat(file_path)
+    else:
+        warnings.warn('The file type is not competable. File not saved!')
+
+def read_fmri(file_path):
+    suff=pathlib.Path(file_path).suffixes
+    if '.nii' in suff:
+        if len(suff)==1:
+            return read_nifty_fmri(file_path)
+        elif len(suff)>1:
+            return read_cifty(file_path)
+    else:
+        warnings.warn('The file type is not competable. File not saved!')
