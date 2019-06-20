@@ -49,6 +49,8 @@ def connectivity_matrix_diffusion(tract_data: np.ndarray, meta: pd.DataFrame, pa
 def connectivity_matrix_fmri(data: np.ndarray, meta: pd.DataFrame, parc: np.ndarray):
     tpoints = data.shape[0]
     parcels = len(meta)
+    if len(parc.shape) > 1:
+        parc = parc[:, 0]
     parcelated_dtseries = np.zeros((parcels, tpoints))
     if not len(parc) == data.shape[1]:
         data = data[:, :len(parc)]

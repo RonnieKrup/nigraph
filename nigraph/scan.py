@@ -40,14 +40,14 @@ class Scan:
             else:
                 self.data_type = 'tracts'
         else:
-            warnings.warn('ROI file not found. ROI not loaded')
+            warnings.warn('file not found. file not loaded')
 
     def set_atlas(self, parc_path: Union[pathlib.Path, str], meta_path: Union[pathlib.Path, str]=''):
         """ atlas can be nifti or cifti
         metadata must have index and label. can be .txt or .xml
         if metadata is not available, indices and labels are the unique values of parc
         """
-        if os.path.isfile(parc_path) and (os.path.isfile(meta_path) or meta_path == ''):
+        if os.path.isfile(parc_path) and (os.path.isfile(meta_path) or meta_path.strip() == ''):
             self.atlas['parc'] = parc_path
             self.atlas['meta'] = meta_path
             self.saved_results = {}

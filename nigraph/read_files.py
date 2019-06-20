@@ -25,7 +25,8 @@ def read_nifti_fmri(file_path, get_shape):
 
 def read_cifti(file_path):
     cif = nib.load(file_path).get_data()
-    cif = signal.detrend(cif)
+    if cif.shape[0] == 1:
+        cif = np.transpose(cif)
     return cif
 
 
