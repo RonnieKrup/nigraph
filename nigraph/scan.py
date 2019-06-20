@@ -14,9 +14,9 @@ import networkx as nx
 def save_results(func):
     """ decorator to save property data for further use"""
     def new_function(self):
-        if func.__name__ not in self.func_results:
-            self.saved_results = func(self)
-        return self.func_results[func.__name__]
+        if func.__name__ not in self.saved_results:
+            self.saved_results[func.__name__] = func(self)
+        return self.saved_results[func.__name__]
     return new_function
 
 
@@ -47,7 +47,7 @@ class Scan:
         metadata must have index and label. can be .txt or .xml
         if metadata is not available, indices and labels are the unique values of parc
         """
-        if os.path.isfile(parc_path) and os.path.isfile(meta_path):
+        if os.path.isfile(parc_path) and (os.path.isfile(meta_path) or meta_path == ''):
             self.atlas['parc'] = parc_path
             self.atlas['meta'] = meta_path
             self.saved_results = {}
@@ -62,8 +62,8 @@ class Scan:
         else:
             warnings.warn('ROI file not found. ROI not loaded')
 
-    @save_results
     @property
+    @save_results
     def connectivity_matrix(self) -> np.ndarray:
         """computes connectivity matrix"""
         if self.data_type == 'tracts':
@@ -76,14 +76,14 @@ class Scan:
             matrix = connectivity.connectivity_matrix_fmri(dat, self.labels, parc)
         return matrix
 
-    @save_results
     @property
+    @save_results
     def connectivity_graph(self):
         graph = nx.from_numpy_matrix(self.connectivity_matrix)
         return graph
 
-    @save_results
     @property
+    @save_results
     def labels(self):
         if self.atlas['meta'] == '':
             if self.data_type == 'tracts':
@@ -91,7 +91,8 @@ class Scan:
             else:
                 parc = read_files.read_fmri(self.atlas['parc'])
             indices = [x for x in np.unique(parc) if x > 0]
-            meta = pd.DataFrame([indices, indices], index=0, columns=['index', 'area'])
+            meta = pd.DataFrame(np.transpose([indices, indices]), columns=['index', 'area'])
+            meta = meta.set_index('index')
         else:
             meta = read_files.read_metadata_atlas(self.atlas['meta'])
         return meta
@@ -142,8 +143,8 @@ class Scan:
             nb.save(img, path)
         return return_val
 
-    @save_results
     @property
+    @save_results
     def msp(self):
         """compute mean shortest path.
         Distances are computed by 1/correlation for fMRI and by 1/number_of_tracts for diffusion.
@@ -170,35 +171,35 @@ class Scan:
             msp = nx.average_shortest_path_length(g)
         return msp
 
-    @save_results
     @property
+    @save_results
     def cc(self):
         """compute the closeness centrality"""
         cc = nx.closeness_centrality(self.connectivity_graph)
         return np.mean(list(cc.values()))
 
-    @save_results
     @property
+    @save_results
     def dd(self):
         """compute mean degree for this graph"""
         vec = list(dict(self.connectivity_graph.degree).values())
         mean_deg = np.mean(vec)
         return mean_deg
 
-    @save_results
     @property
+    @save_results
     def nc(self):
         """compute node connectivity for this graph"""
         return nx.average_node_connectivity(self.connectivity_graph)
 
-    @save_results
     @property
+    @save_results
     def ec(self):
         """compute edge connectivity for this graph"""
         return nx.edge_connectivity(self.connectivity_graph)
 
-    @save_results
     @property
+    @save_results
     def mcc(self):
         """compute mean clustering coefficient"""
         return nx.edge_connectivity(self.connectivity_graph)

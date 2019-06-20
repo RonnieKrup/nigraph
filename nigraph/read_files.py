@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 import scipy.io as spio
 import pathlib
 import warnings
+from scipy import signal
 ###
 
 
@@ -14,6 +15,7 @@ def read_nifti_fmri(file_path, get_shape):
     nifshape = nif.shape
     if len(nifshape) == 4:
         dtseries = nif.reshape((nifshape[3], nifshape[0] * nifshape[1] * nifshape[2]))
+        dtseries = signal.detrend(dtseries)
     else:
         dtseries = nif.reshape((nifshape[0] * nifshape[1] * nifshape[2]))
     if get_shape:
@@ -23,6 +25,7 @@ def read_nifti_fmri(file_path, get_shape):
 
 def read_cifti(file_path):
     cif = nib.load(file_path).get_data()
+    cif = signal.detrend(cif)
     return cif
 
 
@@ -77,9 +80,9 @@ def read_tracts(file_path):
 def read_fmri(file_path, get_shape=False):
     suff = pathlib.Path(file_path).suffixes
     if '.nii' in suff:
-        if len(suff) == 1:
+        if suff[0] == '.nii':
             return read_nifti_fmri(file_path, get_shape)
-        elif len(suff) > 1:
+        else:
             return read_cifti(file_path)
     else:
         warnings.warn('The file type is not compatible. File not saved!')
