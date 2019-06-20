@@ -1,4 +1,6 @@
+from nigraph.nigraph import Scan
 # Sample Test passing with nose and pytest
 
-def test_pass():
-    assert True, "dummy sample test"
+
+data = Scan()
+Scan.set_atlas(r'C:\Users\Ronnie\Documents\PHD\schoolwork\pythonCourse\nigraph\nigraph\example_data\fmri\nifti_subject.nii.gz')
