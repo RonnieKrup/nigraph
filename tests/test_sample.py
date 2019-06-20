@@ -4,8 +4,8 @@ import numpy as np
 
 
 data = Scan()
-data.set_file(r'C:\Users\Ronnie\Documents\PHD\schoolwork\pythonCourse\nigraph\nigraph\example_data\mri\subjects_tck.tck')
-data.set_atlas(r'C:\Users\Ronnie\Documents\PHD\schoolwork\pythonCourse\nigraph\nigraph\example_data\mri\atlas_tck.nii.gz')
-x = data.connectivity_matrix
+data.set_file(r'C:\Users\Ronnie\Documents\PHD\schoolwork\pythonCourse\nigraph\nigraph\example_data\fmri\nifti_subject.nii.gz')
+data.set_roi(r'C:\Users\Ronnie\Documents\PHD\schoolwork\pythonCourse\nigraph\nigraph\example_data\parcel34.nii.gz')
+x = data.seed_based
 print(x.shape)
 print(np.max(x))

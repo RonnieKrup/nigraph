@@ -63,6 +63,6 @@ def connectivity_matrix_fmri(data: np.ndarray, meta: pd.DataFrame, parc: np.ndar
 
 
 def seed_map(roi, data: np.ndarray):
-    roi_vals = np.mean(data[:roi > 0], axis=1)
-    s_map = np.apply_along_axis(lambda x: pearsonr(roi_vals, x), data, axis=1)
+    roi_vals = np.mean(data[:, roi > 0], axis=1)
+    s_map = np.apply_along_axis(lambda x: pearsonr(roi_vals, x), axis=0, arr=data)
     return s_map

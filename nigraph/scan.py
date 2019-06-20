@@ -132,12 +132,12 @@ class Scan:
             data = data[0]
         seed_map = connectivity.seed_map(roi_data, data)
         if shape is not None:
-            seed_map = seed_map.reshape(shape)
+            seed_map = seed_map[0,:].reshape(shape[:3])
             return_val = seed_map
         else:
             return_val = None
         if self.seed_prefix == '':
-            raise UserWarning('no prefix added, map will not be saved')
+            print('WARNING: no prefix added, map will not be saved')
         else:
             img = nb.Nifti1Image(seed_map, affine=None)
             split_roi = os.path.split(self.roi)
