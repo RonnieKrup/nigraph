@@ -33,7 +33,7 @@ class Scan:
     def set_file(self, filepath: Union[pathlib.Path, str]):
         """ file can be nifti or cifti for fMRI, .tck or .mat (output from eDTI) for tracts"""
         if os.path.isfile(filepath):
-            self.path = filepath
+            self.path = str(filepath)
             self.saved_results = {}
             extention = pathlib.Path(filepath).suffixes
             if '.nii' in extention:
@@ -87,7 +87,7 @@ class Scan:
     @property
     @save_results
     def labels(self):
-        if self.atlas['meta'] == '':
+        if self.atlas['meta'] == '' or self.atlas['meta'] == str(Path('')):
             if self.data_type == 'tracts':
                 parc = read_files.read_nifti(self.atlas['parc'])
             else:
