@@ -8,6 +8,7 @@ import warnings
 from . import connectivity, read_files
 import pandas as pd
 import networkx as nx
+from pathlib import Path
 ###
 
 
@@ -40,19 +41,20 @@ class Scan:
             else:
                 self.data_type = 'tracts'
         else:
-            warnings.warn('file not found. file not loaded')
+            raise UserWarning('file not found. file not loaded')
 
     def set_atlas(self, parc_path: Union[pathlib.Path, str], meta_path: Union[pathlib.Path, str]=''):
         """ atlas can be nifti or cifti
         metadata must have index and label. can be .txt or .xml
         if metadata is not available, indices and labels are the unique values of parc
         """
-        if os.path.isfile(parc_path) and (os.path.isfile(meta_path) or meta_path.strip() == ''):
+        if os.path.isfile(parc_path) and (os.path.isfile(meta_path) or meta_path.strip() == ''
+                                          or meta_path == Path('')):
             self.atlas['parc'] = parc_path
             self.atlas['meta'] = meta_path
             self.saved_results = {}
         else:
-            warnings.warn('One of the files was not found, Parcellation not loaded')
+            raise UserWarning('One of the files was not found, Parcellation not loaded')
 
     def set_roi(self, roi_path, prefix=''):
         """roi will be nifti"""
@@ -60,7 +62,7 @@ class Scan:
             self.roi = roi_path
             self.seed_prefix = prefix
         else:
-            warnings.warn('ROI file not found. ROI not loaded')
+            raise UserWarning('ROI file not found. ROI not loaded')
 
     @property
     @save_results
@@ -114,7 +116,7 @@ class Scan:
         if measure_name in measures.keys():
             measure_name = measures[measure_name]
         elif measure_name not in measures.values():
-            warnings.warn('no such measure implemented')
+            raise UserWarning('no such measure implemented')
             return 0
         return getattr(self, measure_name)
 
@@ -135,7 +137,7 @@ class Scan:
         else:
             return_val = None
         if self.seed_prefix == '':
-            warnings.warn('no prefix added, map will not be saved')
+            raise UserWarning('no prefix added, map will not be saved')
         else:
             img = nb.Nifti1Image(seed_map, affine=None)
             split_roi = os.path.split(self.roi)

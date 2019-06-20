@@ -67,17 +67,17 @@ def read_metadata_atlas(file_path):
         label = pd.read_csv(file_path, header=None, sep=' ', names=['ind', 'area', 'real_index'])
         label = label.set_index('real_index')
         return label
-    warnings.warn('The file type is not compatible. File not saved!')
+    raise UserWarning('The file type is not compatible. File not saved!')
 
 
 def read_tracts(file_path):
-    suff = pathlib.Path(file_path).suffixes
+    suff = pathlib.Path(file_path).suffix
     if suff == '.tck':
         return read_tck(file_path)
     elif suff == '.mat':
         return read_mat(file_path)
     else:
-        warnings.warn('The file type is not compatible. File not saved!')
+        raise UserWarning('The file type is not compatible. File not saved!')
 
 
 def read_fmri(file_path, get_shape=False):
@@ -88,4 +88,4 @@ def read_fmri(file_path, get_shape=False):
         else:
             return read_cifti(file_path)
     else:
-        warnings.warn('The file type is not compatible. File not saved!')
+        raise UserWarning('The file type is not compatible. File not saved!')
