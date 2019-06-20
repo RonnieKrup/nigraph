@@ -47,10 +47,11 @@ def connectivity_matrix_diffusion(tract_data: np.ndarray, meta: pd.DataFrame, pa
 
 
 def connectivity_matrix_fmri(data: np.ndarray, meta: pd.DataFrame, parc: np.ndarray):
-
     tpoints = data.shape[0]
     parcels = np.max(np.unique(parc))
     parcelated_dtseries = np.zeros((parcels, tpoints))
+    if not parc.shape == data.shape:
+        data = data[:parc.shape, :]
     for area in range(len(meta.index)):
         area_dtseries = np.mean(data[:, parc == meta.index[area]], axis=1)
         parcelated_dtseries[area, :] = area_dtseries

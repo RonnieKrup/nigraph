@@ -32,6 +32,7 @@ class Scan:
         """ file can be nifti or cifti for fMRI, .tck or .mat (output from eDTI) for tracts"""
         if os.path.isfile(filepath):
             self.path = filepath
+            self.saved_results = {}
             extention = pathlib.Path(filepath).suffixes
             if '.nii' in extention:
                 self.data_type = 'fMRI'
@@ -51,10 +52,11 @@ class Scan:
         else:
             warnings.warn('One of the files was not found, Parcellation not loaded')
 
-    def set_roi(self, roi_path):
+    def set_roi(self, roi_path, prefix=''):
         """roi will be nifti"""
         if os.path.isfile(roi_path):
             self.roi = roi_path
+            return self.seed_based(prefix)
         else:
             warnings.warn('ROI file not found. ROI not loaded')
 
@@ -62,7 +64,6 @@ class Scan:
     @property
     def connectivity_matrix(self) -> np.ndarray:
         """computes connectivity matrix"""
-        ##################################
         if self.data_type == 'tracts':
             parc = read_files.read_nifti(self.atlas['parc'])
             tracts = read_files.read_tracts(self.path)
@@ -126,22 +127,25 @@ class Scan:
         seed_map = connectivity.seed_map(roi_data, data)
         if shape is not None:
             seed_map = seed_map.reshape(shape)
-
+            return_val = seed_map
+        else:
+            return_val = None
         if prefix == '':
             warnings.warn('no prefix added, map will not be saved')
         else:
             img = nb.Nifti1Image(seed_map, affine=None)
             split_roi = os.path.split(self.roi)
-            path = os.path.join(split_roi[0], prefix + split_roi[-1])
+            path = os.path.join(split_roi[0], prefix + '_' + split_roi[-1])
             nb.save(img, path)
-        return seed_map
+        return return_val
 
     @save_results
     @property
     def msp(self):
         """compute mean shortest path.
         Distances are computed by 1/correlation for fMRI and by 1/number_of_tracts for diffusion.
-        connectivity
+        connectivity.
+        For non-binary map dijkstra algorithm is used.
         """
         if np.any(self.connectivity_matrix.astype(int) > 1):
             cm2 = 1 / self.connectivity_matrix
