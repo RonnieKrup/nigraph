@@ -48,7 +48,7 @@ class Scan:
         metadata must have index and label. can be .txt or .xml
         if metadata is not available, indices and labels are the unique values of parc
         """
-        if os.path.isfile(parc_path) and (os.path.isfile(meta_path) or meta_path.strip() == ''
+        if os.path.isfile(parc_path) and (os.path.isfile(meta_path) or meta_path == ''
                                           or meta_path == Path('')):
             self.atlas['parc'] = parc_path
             self.atlas['meta'] = meta_path
