@@ -48,13 +48,13 @@ def connectivity_matrix_diffusion(tract_data: np.ndarray, meta: pd.DataFrame, pa
 
 def connectivity_matrix_fmri(data: np.ndarray, meta: pd.DataFrame, parc: np.ndarray):
     tpoints = data.shape[0]
-    parcels = len(np.unique(parc))-1
+    parcels = len(meta)
     parcelated_dtseries = np.zeros((parcels, tpoints))
     if not len(parc) == data.shape[1]:
         data = data[:, :len(parc)]
 
     for area in range(len(meta.index)):
-        area_dtseries = np.mean(data[:, parc == meta.index[area]], axis=1)
+        area_dtseries = np.mean(data[:, parc == int(meta.index[area])], axis=1)
         parcelated_dtseries[area, :] = area_dtseries
     corr_mat = np.corrcoef(parcelated_dtseries)
     return corr_mat

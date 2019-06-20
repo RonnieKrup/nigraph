@@ -58,7 +58,9 @@ def read_metadata_atlas(file_path):
         for i in root[1]:
             ind.append(i.attrib['index'])
             name.append(i.text)
-        return pd.DataFrame(np.transpose([ind, name]))
+        x = pd.DataFrame(np.transpose([ind, name]), columns=['index', 'area'])
+        x = x.set_index('index')
+        return x
 
     elif file_path[-3:] == 'txt':
         label = pd.read_csv(file_path, header=None, sep=' ', names=['ind', 'area', 'real_index'])

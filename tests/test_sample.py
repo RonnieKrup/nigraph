@@ -5,7 +5,7 @@ import numpy as np
 
 data = Scan()
 data.set_file(r'C:\Users\Ronnie\Documents\PHD\schoolwork\pythonCourse\nigraph\nigraph\example_data\fmri\nifti_subject.nii.gz')
-data.set_atlas(r'C:\Users\Ronnie\Documents\PHD\schoolwork\pythonCourse\nigraph\nigraph\example_data\fmri\nifti_atlas.nii.gz')
+data.set_atlas(r'C:\Users\Ronnie\Documents\PHD\schoolwork\pythonCourse\nigraph\nigraph\example_data\fmri\nifti_atlas.nii.gz', r'C:\Users\Ronnie\Documents\PHD\schoolwork\pythonCourse\nigraph\nigraph\example_data\fmri\mifti_atlas.xml')
 x = data.connectivity_matrix
 print(x.shape)
 print(np.min(x))
