@@ -59,7 +59,7 @@ class Scan:
     def set_roi(self, roi_path, prefix=''):
         """roi will be nifti"""
         if os.path.isfile(roi_path):
-            self.roi = roi_path
+            self.roi = str(roi_path)
             self.seed_prefix = prefix
         else:
             raise UserWarning('ROI file not found. ROI not loaded')
