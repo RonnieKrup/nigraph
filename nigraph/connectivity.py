@@ -22,7 +22,7 @@ def look_around(point, parc):
     return random.choice(list(d[max(d.keys())]))
 
 
-def connectivity_matrix_diffusion(tract_data: np.ndarray, meta: pd.DataFrame, parc: np.ndarray) -> Tuple[np.ndarray, list]:
+def connectivity_matrix_diffusion(tract_data: np.ndarray, meta: pd.DataFrame, parc: np.ndarray) -> np.ndarray:
     labels = meta.index
     cm = np.zeros((len(labels), len(labels)))
     print("computing end connectivity matrix")

@@ -27,6 +27,7 @@ class Scan:
         self.roi = ''
         self.saved_results = {}
         self.data_type = ''
+        self.seed_prefix = ''
 
     def set_file(self, filepath: Union[pathlib.Path, str]):
         """ file can be nifti or cifti for fMRI, .tck or .mat (output from eDTI) for tracts"""
@@ -44,6 +45,7 @@ class Scan:
     def set_atlas(self, parc_path: Union[pathlib.Path, str], meta_path: Union[pathlib.Path, str]=''):
         """ atlas can be nifti or cifti
         metadata must have index and label. can be .txt or .xml
+        if metadata is not available, indices and labels are the unique values of parc
         """
         if os.path.isfile(parc_path) and os.path.isfile(meta_path):
             self.atlas['parc'] = parc_path
@@ -56,7 +58,7 @@ class Scan:
         """roi will be nifti"""
         if os.path.isfile(roi_path):
             self.roi = roi_path
-            return self.seed_based(prefix)
+            self.seed_prefix = prefix
         else:
             warnings.warn('ROI file not found. ROI not loaded')
 
@@ -115,7 +117,8 @@ class Scan:
             return 0
         return getattr(self, measure_name)
 
-    def seed_based(self, prefix='') -> nb.nifti1:
+    @property
+    def seed_based(self) -> nb.nifti1:
         """computes seed based connectivity matrix for fMRI.
         if save_path is not empty, saves the map as nifti"""
         roi_data = read_files.read_fmri(self.roi)
@@ -130,12 +133,12 @@ class Scan:
             return_val = seed_map
         else:
             return_val = None
-        if prefix == '':
+        if self.seed_prefix == '':
             warnings.warn('no prefix added, map will not be saved')
         else:
             img = nb.Nifti1Image(seed_map, affine=None)
             split_roi = os.path.split(self.roi)
-            path = os.path.join(split_roi[0], prefix + '_' + split_roi[-1])
+            path = os.path.join(split_roi[0], self.seed_prefix + '_' + split_roi[-1])
             nb.save(img, path)
         return return_val
 
