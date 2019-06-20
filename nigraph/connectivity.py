@@ -40,7 +40,7 @@ def connectivity_matrix_diffusion(tract_data: np.ndarray, meta: pd.DataFrame, pa
         else:
             end = parc[end[0], end[1], end[2]]
 
-        if start in labels and end in labels:
+        if (start in labels) and (end in labels):
             cm[labels.index(start), labels.index(end)] += 1
 
         return cm

@@ -50,8 +50,8 @@ class Scan:
         """
         if os.path.isfile(parc_path) and (os.path.isfile(meta_path) or meta_path == ''
                                           or meta_path == Path('')):
-            self.atlas['parc'] = parc_path
-            self.atlas['meta'] = meta_path
+            self.atlas['parc'] = str(parc_path)
+            self.atlas['meta'] = str(meta_path)
             self.saved_results = {}
         else:
             raise UserWarning('One of the files was not found, Parcellation not loaded')
