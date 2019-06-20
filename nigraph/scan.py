@@ -60,7 +60,7 @@ class Scan:
         """roi will be nifti"""
         if os.path.isfile(roi_path):
             self.roi = str(roi_path)
-            self.seed_prefix = prefix
+            self.seed_prefix = str(prefix)
         else:
             raise UserWarning('ROI file not found. ROI not loaded')
 
@@ -124,6 +124,7 @@ class Scan:
     def seed_based(self) -> nb.nifti1:
         """computes seed based connectivity matrix for fMRI.
         if save_path is not empty, saves the map as nifti"""
+        print("We're in")
         roi_data = read_files.read_fmri(self.roi)
         data = read_files.read_fmri(self.path, get_shape=True)
         shape = None
@@ -136,7 +137,8 @@ class Scan:
             return_val = seed_map
         else:
             return_val = None
-        if self.seed_prefix == '':
+        print("ROI done")
+        if self.seed_prefix == '' or self.seed_prefix == str(Path('')):
             print('WARNING: no prefix added, map will not be saved')
         else:
             img = nb.Nifti1Image(seed_map, affine=None)
