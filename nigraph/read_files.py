@@ -82,7 +82,7 @@ def read_tracts(file_path):
 
 def read_fmri(file_path, get_shape=False):
     suff = pathlib.Path(file_path).suffixes
-    if '.nii' in suff:
+    if '.nii' in file_path:
         if suff[0] == '.nii':
             return read_nifti_fmri(file_path, get_shape)
         else:

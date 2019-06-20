@@ -43,7 +43,7 @@ def connectivity_matrix_diffusion(tract_data: np.ndarray, meta: pd.DataFrame, pa
         if (start in labels) and (end in labels):
             cm[labels.index(start), labels.index(end)] += 1
 
-        return cm
+    return cm
 
 
 def connectivity_matrix_fmri(data: np.ndarray, meta: pd.DataFrame, parc: np.ndarray):
