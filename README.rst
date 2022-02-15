@@ -9,7 +9,7 @@ nigraph
    :target: https://travis-ci.org/RonnieKrup/nigraph
    :alt: Latest Travis CI build status
 
-Backend for working with diffusion and fMRI connectivity data
+Backend for working with diffusion and fMRI connectivity data - Written as a hackaton project for TAU "Python for Neuroscience" course, but never was sadly never finished
 
 Usage
 -----
